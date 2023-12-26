@@ -178,12 +178,14 @@ class ImplicitRK:
         """
         # Method 1
         # Simplistic implementation, where we compute the stages k1,...,ks from z and then y1 from k1,...,ks
-        return y0 + dt * np.kron(self.b, np.identity(self.n_vars)) @ self.fz(z, t0, y0, f, dt)
+        #return y0 + dt * np.kron(self.b, np.identity(self.n_vars)) @ self.fz(z, t0, y0, f, dt)
 
         # Method 2
         # Compute y1 from z by using the inverse of A
         # This is more efficient than method 1, since we do not need to compute the stages k1,...,ks
         # Compute the matrix z-->F(z) only once!
+        A_inv = np.linalg.inv(self.A)
+        return y0 + np.kron(self.b, np.eye(self.n_vars)) @ np.kron(A_inv, np.eye(self.n_vars)) @ z
 
     def estimate_error(self, z, t0, y0, f, dt):
         """
