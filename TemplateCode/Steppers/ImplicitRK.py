@@ -202,6 +202,7 @@ class ImplicitRK:
 
         """
 
+        # TODO Error estimator - page:35
         raise NotImplementedError("Error estimator not implemented for " + self.description)
 
     def scipy_solver(self, t0, y0, f, dt):
@@ -256,6 +257,7 @@ class ImplicitRK:
         # - second, the preconditioner M (if any).
         # dPhi_info is computed only once if self.quasi_newton is True.
 
+        # TODO ImplicitRK.Newton
         raise NotImplementedError("ImplicitRK.Newton method not implemented for " + self.description)
 
         return z, n_Newtion_iter, tot_lin_solver_iter
@@ -293,6 +295,7 @@ class ImplicitRK:
         # Solve Phi'(z)dz=-Phi(z)
         if self.solver_opts["linear_solver"] == "direct":
             # Direct solver
+            # TODO Direct Solver
             raise NotImplementedError("Direct Solver not implemented")
             n_lin_solver_iter = 0
         else:
@@ -301,6 +304,7 @@ class ImplicitRK:
             gmres_count = gmres_counter()
             # Call the iterative solver. rememebr to pass the preconditioner M (if any). GMRES accepts None as preconditioner.
             # Pay attenetion that gmres returns a tuple (dz, info), where info is a flag that is 0 if the solver converged and 1 otherwise.
+            # TODO Iterative Solver
             raise NotImplementedError("Iterative Solver not implemented")
             # get the number of iterations from the callback
             n_lin_solver_iter = gmres_count.niter
@@ -333,6 +337,7 @@ class ImplicitRK:
             # Remember that you can use the function self.dPhi_FD to approximate Phi'(z)dz using finite differences
             # Give Phiz_copy as an argument to self.dPhi_FD to save computations
             # Remember to use z_copy and Phiz_copy instead of z and Phiz, otherwise the Jacobian will be wrong in quasi-Newton
+            # TODO Matrix Free Approach
             raise NotImplementedError("Matrix Free Approach not implemented")
         else:
             # Compute the Jacobian matrix Phi'(z) exactly
@@ -361,6 +366,7 @@ class ImplicitRK:
             # Compute the ILU factorization for dPhi and use it as a preconditioner
             # Define the preconditioner M as a LinearOperator
             # Have a look at the web for hints on defining a preconditioner for an iterative solver in scipy
+            # TODO ILU Preconditioner
             raise NotImplementedError("ILU Preconditioner not implemented")
 
             return M
@@ -383,10 +389,7 @@ class ImplicitRK:
         """
         # Use the function self.fz to compute F(z)
         fz_eval = self.fz(z, t0, y0, f, dt)
-
-        raise NotImplementedError("ImplicitRK.G not implemented")
-
-        # To define G you can use both the kronecker product or build it by hand with for loops. One of the two is better, specially for large systems. Which one?
+        Gz = dt * np.kron(self.A, np.eye(self.n_vars)) @ fz_eval
 
         return Gz
 
@@ -428,6 +431,7 @@ class ImplicitRK:
         #             and then evaluate the jacobian of Phi
         # Choose what you prefer, but one of the two is more efficient than the other. Which one?
 
+        # TODO ImplicitRK.dPhi
         raise NotImplementedError("ImplicitRK.dPhi not implemented")
 
     def dPhi_FD(self, dz, z, t0, y0, f, dt, Phiz=None):
@@ -455,6 +459,7 @@ class ImplicitRK:
             norm_yz = np.linalg.norm(y0 + z[: self.n_vars])
             eps = self.FD_eps * (1.0 + norm_yz) / norm_dz
 
+            # TODO ImplicitRK.dPhi_FD
             raise NotImplementedError("ImplicitRK.dPhi_FD not implemented")
 
         else:  # if dz==0 then return 0 (dPhi*0=0)
@@ -473,7 +478,17 @@ class ImplicitRK:
         Returns:
             fz (np.array): Array of shape (s*n_vars) containing F(z)=(f(t0+c_1*dt,y0+z1),...,f(t0+c_s*dt,y0+zs))
         """
-        raise NotImplementedError("ImplicitRK.fz not implemented")
+        n_vars = len(y0)
+        s = int(z.shape[0] / n_vars)
+        c = self.c
+        fz = np.zeros_like(z)
+        for i in range(0, s):
+            index_start = i*n_vars
+            index_end = (i+1)*n_vars
+            y = y0+z[index_start:index_end]
+            t = t0 + c[i]*dt
+            fz[index_start:index_end] = f(t, y)
+        return fz
 
 
 class LobattoIIIC(ImplicitRK):
@@ -531,6 +546,7 @@ class Collocation(ImplicitRK):
         Returns:
             Lj (np.array): Array of shape (n,) containing the values of L_j(x)
         """
+        # TODO Collocation.Lagrange
         raise NotImplementedError("Collocation.Lagrange not implemented")
 
     def compute_Ab(self, c):
@@ -546,6 +562,7 @@ class Collocation(ImplicitRK):
 
         # Hint: use scipy.integrate.quad to compute the integrals
 
+        # TODO Collocation.compute_Ab
         raise NotImplementedError("Collocation.compute_Ab not implemented")
 
         return A, b
@@ -609,6 +626,7 @@ class Gauss(Collocation):
         # Then use the power **, mult *, etc to define the polynomial x**s*(1-x)**s.
         # Then use the np.polynomial.polynomial.Polynomial class methods to differentiate it and compute the roots.
 
+        # TODO Gauss.compute_c
         raise NotImplementedError("Gauss.compute_c not implemented")
 
         return c
@@ -646,6 +664,7 @@ class Radau(Collocation):
             c (np.array): Array of shape (s,) containing the nodes of the Radau collocation method
         """
 
+        # TODO Radau.compute_c
         raise NotImplementedError("Radau.compute_c not implemented")
 
         return c
@@ -668,6 +687,7 @@ class Radau(Collocation):
         if self.s == 3:
             # Remember to divide the error by sqrt(n_vars) to make it independent of the number of variables (have a look at the DOPRI54 error estimator)
             # This is particularly important when solving PDEs, where n_vars is large and can change if we change the mesh size.
+            # TODO Radau.estimate_error
             raise NotImplementedError("Radau.estimate_error not implemented")
         else:
             super().estimate_error(z, t0, y0, f, dt)
