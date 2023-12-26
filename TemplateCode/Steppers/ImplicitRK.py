@@ -685,6 +685,12 @@ class Radau(Collocation):
         c.sort()
         return c
 
+    def get_y1(self, z, t0, y0, f, dt):
+        n_vars = len(y0)
+        s = z.shape[0] / n_vars
+        index_start = int((s - 1) * n_vars)
+        return y0 + z[index_start:]
+
     def estimate_error(self, z, t0, y0, f, dt):
         """
         Estimate the error of the Radau method at time t0+dt.
