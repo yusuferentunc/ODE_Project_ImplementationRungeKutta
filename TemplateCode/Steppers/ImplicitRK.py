@@ -675,10 +675,12 @@ class Radau(Collocation):
         Returns:
             c (np.array): Array of shape (s,) containing the nodes of the Radau collocation method
         """
-
-        # TODO Radau.compute_c
-        raise NotImplementedError("Radau.compute_c not implemented")
-
+        x = np.polynomial.polynomial.Polynomial([0, 1])
+        p_s = x ** (s - 1) * (1 - x) ** s
+        p_s_diff = p_s.deriv(m=s - 1)
+        roots = np.polynomial.polynomial.Polynomial.roots(p_s_diff)
+        c = np.real(roots)
+        c.sort()
         return c
 
     def estimate_error(self, z, t0, y0, f, dt):
