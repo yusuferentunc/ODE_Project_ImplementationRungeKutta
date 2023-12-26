@@ -222,12 +222,15 @@ class ImplicitRK:
         """
 
         if not self.quasi_newton:
-            z, info, ier, msg = scipy.optimize.fsolve(lambda z: self.Phi(z, t0, y0, f, dt), x0=np.zeros(self.n_vars * self.s), xtol=self.Newton_tol, maxfev=self.Newton_max_iter, full_output=True)
+            z, info, ier, msg = scipy.optimize.fsolve(lambda z: self.Phi(z, t0, y0, f, dt),
+                                                      x0=np.zeros(self.n_vars * self.s), xtol=self.Newton_tol,
+                                                      maxfev=self.Newton_max_iter, full_output=True)
         else:
             # We use a quasi-Newton method, where we compute the Jacobian only once and reuse it at each iteration
             dPhi = self.dPhi(np.zeros(self.n_vars * self.s), t0, y0, f, dt)
             z, info, ier, msg = scipy.optimize.fsolve(
-                lambda z: self.Phi(z, t0, y0, f, dt), x0=np.zeros(self.n_vars * self.s), xtol=self.Newton_tol, maxfev=self.Newton_max_iter, fprime=lambda x: dPhi, full_output=True
+                lambda z: self.Phi(z, t0, y0, f, dt), x0=np.zeros(self.n_vars * self.s), xtol=self.Newton_tol,
+                maxfev=self.Newton_max_iter, fprime=lambda x: dPhi, full_output=True
             )
 
         return z, info["nfev"], 0
@@ -483,10 +486,10 @@ class ImplicitRK:
         c = self.c
         fz = np.zeros_like(z)
         for i in range(0, s):
-            index_start = i*n_vars
-            index_end = (i+1)*n_vars
-            y = y0+z[index_start:index_end]
-            t = t0 + c[i]*dt
+            index_start = i * n_vars
+            index_end = (i + 1) * n_vars
+            y = y0 + z[index_start:index_end]
+            t = t0 + c[i] * dt
             fz[index_start:index_end] = f(t, y)
         return fz
 
@@ -546,6 +549,14 @@ class Collocation(ImplicitRK):
         Returns:
             Lj (np.array): Array of shape (n,) containing the values of L_j(x)
         """
+        s = len(c)
+        Lj = np.ones_like(x)
+
+        for m in range(s):
+            if m != j:
+                Lj *= (x - c[m]) / (c[j] - c[m])
+
+        return Lj
         # TODO Collocation.Lagrange
         raise NotImplementedError("Collocation.Lagrange not implemented")
 
@@ -559,12 +570,13 @@ class Collocation(ImplicitRK):
             A (np.array): Array of shape (s,s) containing the Runge-Kutta matrix
             b (np.array): Array of shape (s,) containing the weights
         """
-
-        # Hint: use scipy.integrate.quad to compute the integrals
-
-        # TODO Collocation.compute_Ab
-        raise NotImplementedError("Collocation.compute_Ab not implemented")
-
+        s = len(c)
+        A = np.zeros((s, s))
+        b = np.zeros(s)
+        for i in range(0, s):
+            b[i], _ = scipy.integrate.quad(lambda x: self.Lagrange(x, c, i), 0, 1)
+            for j in range(0, s):
+                A[i, j], _ = scipy.integrate.quad(lambda x: self.Lagrange(x, c, i) * self.Lagrange(x, c, j), 0, 1)
         return A, b
 
 
