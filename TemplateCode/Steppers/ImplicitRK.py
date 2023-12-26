@@ -551,9 +551,9 @@ class Collocation(ImplicitRK):
         """
         s = len(c)
         Lj = np.ones_like(x)
-        for m in range(s):
-            if m != j:
-                Lj *= (x - c[m]) / (c[j] - c[m])
+        for i in range(s):
+            if i != j:
+                Lj *= (x - c[i]) / (c[j] - c[i])
         return Lj
 
     def compute_Ab(self, c):
@@ -572,7 +572,7 @@ class Collocation(ImplicitRK):
         for i in range(0, s):
             b[i], _ = scipy.integrate.quad(lambda x: self.Lagrange(x, c, i), 0, 1)
             for j in range(0, s):
-                A[i, j], _ = scipy.integrate.quad(lambda x: self.Lagrange(x, c, i) * self.Lagrange(x, c, j), 0, 1)
+                A[i, j], _ = scipy.integrate.quad(lambda x: self.Lagrange(x, c, j), 0, c[i])
         return A, b
 
 

@@ -33,9 +33,9 @@ solver_opts = {
 # We try to define the stepper. Since many features are missing then it is possible that an exception will be raised
 try:
     RK = LobattoIIIC(solver_opts=solver_opts, adaptivity_opts=adaptivity_opts)
-    RK = RandomCollocation(s=3, solver_opts=solver_opts, adaptivity_opts=adaptivity_opts)
-    RK = Gauss(s=2, solver_opts=solver_opts, adaptivity_opts=adaptivity_opts)
-    RK = Radau(s=2, solver_opts=solver_opts, adaptivity_opts=adaptivity_opts)
+    #RK = RandomCollocation(s=3, solver_opts=solver_opts, adaptivity_opts=adaptivity_opts)
+    #RK = Gauss(s=2, solver_opts=solver_opts, adaptivity_opts=adaptivity_opts)
+    #RK = Radau(s=2, solver_opts=solver_opts, adaptivity_opts=adaptivity_opts)
     # RK = DOPRI54(adaptivity_opts=adaptivity_opts)
 except (NotImplementedError, IncompatibleOptions, UnknownOption) as err:
     print(colorama.Fore.RED + f"ERROR: {err}" + colorama.Style.RESET_ALL)
