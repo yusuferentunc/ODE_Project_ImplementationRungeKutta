@@ -551,14 +551,10 @@ class Collocation(ImplicitRK):
         """
         s = len(c)
         Lj = np.ones_like(x)
-
         for m in range(s):
             if m != j:
                 Lj *= (x - c[m]) / (c[j] - c[m])
-
         return Lj
-        # TODO Collocation.Lagrange
-        raise NotImplementedError("Collocation.Lagrange not implemented")
 
     def compute_Ab(self, c):
         """
@@ -638,9 +634,13 @@ class Gauss(Collocation):
         # Then use the power **, mult *, etc to define the polynomial x**s*(1-x)**s.
         # Then use the np.polynomial.polynomial.Polynomial class methods to differentiate it and compute the roots.
 
-        # TODO Gauss.compute_c
-        raise NotImplementedError("Gauss.compute_c not implemented")
-
+        # Use np.polynomial.polynomial.Polynomial to define the polynomial x
+        x = np.polynomial.polynomial.Polynomial([0, 1])
+        p_s = x ** s * (1 - x) ** s
+        p_s_diff = p_s.deriv(m=s)
+        roots = np.polynomial.polynomial.Polynomial.roots(p_s_diff)
+        c = np.real(roots)
+        c.sort()
         return c
 
 
