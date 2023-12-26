@@ -10,7 +10,7 @@ from Exceptions import IncompatibleOptions, UnknownOption
 import colorama
 
 # For latex text in matplotlib
-plt.rcParams["text.usetex"] = True
+plt.rcParams["text.usetex"] = False
 
 # Load a problem from Problems.py
 P = HIRES()

@@ -67,7 +67,7 @@ for RK in RKs:
     if ended_with_error:
         continue
 
-    plt.rcParams["text.usetex"] = True
+    plt.rcParams["text.usetex"] = False
     fig, ax = plt.subplots()
     # plot the error
     ax.loglog(dts, err, label="Err", marker="o", markersize=10, linewidth=3)

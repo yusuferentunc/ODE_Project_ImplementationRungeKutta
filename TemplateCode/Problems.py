@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # For latex text in matplotlib
-plt.rcParams["text.usetex"] = True
+plt.rcParams["text.usetex"] = False
 
 
 # This file contains a list of ordinary differential equations

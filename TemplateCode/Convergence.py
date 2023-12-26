@@ -68,7 +68,7 @@ except (NotImplementedError, IncompatibleOptions, UnknownOption) as err:
     exit()
 
 # For latex text in matplotlib
-plt.rcParams["text.usetex"] = True
+plt.rcParams["text.usetex"] = False
 fig, ax = plt.subplots()
 # plot the error
 ax.loglog(dts, err, label="Err", linestyle="dashed", color="black", marker="o")

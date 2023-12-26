@@ -64,7 +64,7 @@ for i in range(N_dts):
         break
 
 # For latex text in matplotlib
-plt.rcParams["text.usetex"] = True
+plt.rcParams["text.usetex"] = False
 fig, ax = plt.subplots()
 # plot the error vs cpu time
 fs_label = 20

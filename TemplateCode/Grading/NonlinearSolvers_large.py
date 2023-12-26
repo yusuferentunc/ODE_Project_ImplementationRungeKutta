@@ -71,7 +71,7 @@ for RK in RKs:
         data[RK.description] = [err, cpu]
 
 # Plot the results
-plt.rcParams["text.usetex"] = True
+plt.rcParams["text.usetex"] = False
 fig, ax = plt.subplots(figsize=(6, 4))
 # plot the error vs cpu time
 markers = ["s", "v", "*", "x", "D", "d", "|", "_", ".", ",", "o", "p", "^", "<", ">", "1", "2", "3", "4", "h", "H", "+"]
