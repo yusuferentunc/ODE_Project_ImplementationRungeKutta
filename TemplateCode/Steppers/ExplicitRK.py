@@ -55,9 +55,10 @@ class ExplicitRK:
         if not hasattr(self, "k"):
             self.k = [np.zeros_like(y0) for i in range(self.s)]
 
-        raise NotImplementedError("ExplicitRK.step() is not implemented")
-
         # Compute the stages and y1
+        for i in range(0, self.s):
+            self.k[i] = f(t0 + self.c[i] * dt, y0 + dt * sum(self.A[i, j] * self.k[j] for j in range(0, self.s)))
+        y1 = y0 + dt * sum(self.b[i] * self.k[i] for i in range(0, self.s))
 
         # Estimate the error
         if self.adaptivity_opts["enable_adaptivity"]:
@@ -83,7 +84,7 @@ class ExplicitRK:
             NotImplementedError: When the error estimator is not implemented for the method
 
         """
-
+        # TODO ExplicitRK Error estimator
         raise NotImplementedError("Error estimator not implemented for " + self.description)
 
 
@@ -128,9 +129,8 @@ class DOPRI54(ExplicitRK):
         # Compute the error estimate E_n+1
         self.phat = 4
 
-        raise NotImplementedError("DOPRI54.estimate_error() is not implemented")
-
         # Compute diff = ^y_n+1 - y_n+1
+        diff = np.abs(dt * sum((self.bhat[i] - self.b[i]) * self.k[i] for i in range(self.s)))
 
         # Estimate the error. Divide by sqrt(diff.size) to make it independent of the number of variables
         err = np.linalg.norm(diff) / np.sqrt(diff.size)
