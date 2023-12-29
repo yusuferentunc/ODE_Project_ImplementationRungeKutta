@@ -178,7 +178,7 @@ class ImplicitRK:
         """
         # Method 1
         # Simplistic implementation, where we compute the stages k1,...,ks from z and then y1 from k1,...,ks
-        #return y0 + dt * np.kron(self.b, np.identity(self.n_vars)) @ self.fz(z, t0, y0, f, dt)
+        # return y0 + dt * np.kron(self.b, np.identity(self.n_vars)) @ self.fz(z, t0, y0, f, dt)
 
         # Method 2
         # Compute y1 from z by using the inverse of A
@@ -270,7 +270,8 @@ class ImplicitRK:
             dPhi_info = self.get_dPhi_info(self.Phi(z, t0, y0, f, dt), z, t0, y0, f, dt)
 
         for i in range(self.Newton_max_iter):
-            dz, dPhi_info, n_lin_solver_iter = self.call_linear_solver(z, t0, y0, f, dt, dPhi_info if self.quasi_newton else None)
+            dz, dPhi_info, n_lin_solver_iter = self.call_linear_solver(z, t0, y0, f, dt,
+                                                                       dPhi_info if self.quasi_newton else None)
             n_Newtion_iter += 1
             tot_lin_solver_iter += n_lin_solver_iter
             if np.linalg.norm(dz) < np.linalg.norm(z) * self.Newton_tol:
@@ -350,16 +351,9 @@ class ImplicitRK:
         z_copy = z.copy()
         Phiz_copy = Phiz.copy()
         if self.solver_opts["matrix_free"]:
-            # define dPhi as a LinearOperator, which is a matrix free approach to compute Phi'(z)dz
-            # Use the scipy.sparse.linalg.LinearOperator class and define the matvec function directly from the constructor
-            # Remember that the matvec function takes as input dz and returns Phi'(z)dz.
-            # Remember that you can use the function self.dPhi_FD to approximate Phi'(z)dz using finite differences
-            # Give Phiz_copy as an argument to self.dPhi_FD to save computations
-            # Remember to use z_copy and Phiz_copy instead of z and Phiz, otherwise the Jacobian will be wrong in quasi-Newton
-            # TODO Matrix Free Approach
-            #raise NotImplementedError("Matrix Free Approach not implemented")
             dPhi = scipy.sparse.linalg.LinearOperator((self.n_vars * self.s, self.n_vars * self.s),
-                                       matvec=lambda dz: self.dPhi_FD(dz, z_copy, t0, y0, f, dt, Phiz_copy))
+                                                      matvec=lambda dz: self.dPhi_FD(dz, z_copy, t0, y0, f, dt,
+                                                                                     Phiz_copy))
         else:
             # Compute the Jacobian matrix Phi'(z) exactly
             dPhi = self.dPhi(z_copy, t0, y0, f, dt)
@@ -449,7 +443,7 @@ class ImplicitRK:
         # - method=2: exploit the special structure of Phi(z)=I-dt*kron(A,I)@(f(y0+z0),...,f(y0+zs)), hence compute the Jacobians of f at y0+z1,...,y0+zs
         #             and then evaluate the jacobian of Phi
         # Choose what you prefer, but one of the two is more efficient than the other. Which one?
-        dPhi = scipy.optimize.approx_fprime(z, self.Phi,self.FD_eps, t0, y0, f, dt)
+        dPhi = scipy.optimize.approx_fprime(z, self.Phi, self.FD_eps, t0, y0, f, dt)
         return dPhi
 
     def dPhi_FD(self, dz, z, t0, y0, f, dt, Phiz=None):
@@ -731,7 +725,7 @@ class Radau(Collocation):
             e[0] = -b_hat_0 * (13 + 7 * np.sqrt(6)) / 3
             e[1] = -b_hat_0 * (13 - 7 * np.sqrt(6)) / 3
             e[2] = -b_hat_0 / 3
-            diff = np.abs( b_hat_0 * dt * f(t0, y0) + sum((e[i] * z[i] for i in range(self.s))) )
+            diff = np.abs(b_hat_0 * dt * f(t0, y0) + sum((e[i] * z[i] for i in range(self.s))))
             # Estimate the error. Divide by sqrt(diff.size) to make it independent of the number of variables
             err = np.linalg.norm(diff) / np.sqrt(diff.size)
             return err
