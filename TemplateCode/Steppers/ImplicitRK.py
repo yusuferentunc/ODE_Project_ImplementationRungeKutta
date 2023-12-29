@@ -204,7 +204,7 @@ class ImplicitRK:
 
         """
 
-        # TODO Error estimator - page:35
+        # TODO ImplicitRK Error estimator - page:35
         raise NotImplementedError("Error estimator not implemented for " + self.description)
 
     def scipy_solver(self, t0, y0, f, dt):
@@ -707,9 +707,21 @@ class Radau(Collocation):
             err (float): the estimated error
         """
         if self.s == 3:
-            # Remember to divide the error by sqrt(n_vars) to make it independent of the number of variables (have a look at the DOPRI54 error estimator)
-            # This is particularly important when solving PDEs, where n_vars is large and can change if we change the mesh size.
-            # TODO Radau.estimate_error
-            raise NotImplementedError("Radau.estimate_error not implemented")
+            self.phat = 3
+            # Remember to divide the error by sqrt(n_vars) to make it independent of the number of variables
+            # (have a look at the DOPRI54 error estimator)
+            # This is particularly important when solving PDEs, where n_vars is large
+            # and can change if we change the mesh size.
+            # Compute diff = ^y_n+1 - y_n+1
+            b_hat_0 = 0.274888829595677
+            e = np.zeros(3)
+            e[0] = -b_hat_0 * (13 + 7 * np.sqrt(6)) / 3
+            e[1] = -b_hat_0 * (13 - 7 * np.sqrt(6)) / 3
+            e[2] = -b_hat_0 / 3
+            diff = np.abs( b_hat_0 * dt * f(t0, y0) + sum((e[i] * z[i] for i in range(self.s))) )
+            # Estimate the error. Divide by sqrt(diff.size) to make it independent of the number of variables
+            err = np.linalg.norm(diff) / np.sqrt(diff.size)
+            return err
+
         else:
             super().estimate_error(z, t0, y0, f, dt)
