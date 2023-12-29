@@ -262,8 +262,21 @@ class ImplicitRK:
         # - second, the preconditioner M (if any).
         # dPhi_info is computed only once if self.quasi_newton is True.
 
-        # TODO ImplicitRK.Newton
-        raise NotImplementedError("ImplicitRK.Newton method not implemented for " + self.description)
+        n_Newtion_iter = 0
+        tot_lin_solver_iter = 0
+        z = np.zeros(self.n_vars * self.s)
+
+        if self.quasi_newton:
+            dPhi_info = self.get_dPhi_info(self.Phi(z, t0, y0, f, dt), z, t0, y0, f, dt)
+
+        for i in range(self.Newton_max_iter):
+            dz, dPhi_info, n_lin_solver_iter = self.call_linear_solver(z, t0, y0, f, dt, dPhi_info if self.quasi_newton else None)
+            n_Newtion_iter += 1
+            tot_lin_solver_iter += n_lin_solver_iter
+            if np.linalg.norm(dz) < np.linalg.norm(z) * self.Newton_tol:
+                z = z + dz
+                break
+            z = z + dz
 
         return z, n_Newtion_iter, tot_lin_solver_iter
 
@@ -300,17 +313,22 @@ class ImplicitRK:
         # Solve Phi'(z)dz=-Phi(z)
         if self.solver_opts["linear_solver"] == "direct":
             # Direct solver
-            # TODO Direct Solver
-            raise NotImplementedError("Direct Solver not implemented")
+            dPhiz, _ = dPhi_info
+            lu, piv = scipy.linalg.lu_factor(dPhiz)
+            dz = scipy.linalg.lu_solve((lu, piv), -Phiz)
             n_lin_solver_iter = 0
         else:
             # Iterative solver
             # Set the callback to count the number of iterations, use it as callback=gmres_count in the call to gmres
             gmres_count = gmres_counter()
-            # Call the iterative solver. rememebr to pass the preconditioner M (if any). GMRES accepts None as preconditioner.
-            # Pay attenetion that gmres returns a tuple (dz, info), where info is a flag that is 0 if the solver converged and 1 otherwise.
-            # TODO Iterative Solver
-            raise NotImplementedError("Iterative Solver not implemented")
+            # Extract Jacobian and preconditioner
+            dPhiz, M = dPhi_info
+            # Call the iterative solver (e.g., GMRES)
+            dz, info = scipy.sparse.linalg.gmres(A=dPhiz, b=-Phiz, M=M, callback=gmres_count)
+            # Check convergence
+            if info != 0:
+                raise RuntimeError("Iterative solver did not converge")
+
             # get the number of iterations from the callback
             n_lin_solver_iter = gmres_count.niter
 
@@ -369,11 +387,9 @@ class ImplicitRK:
             if self.solver_opts["matrix_free"]:
                 raise IncompatibleOptions("ILU preconditioner", "matrix-free.")
             # Compute the ILU factorization for dPhi and use it as a preconditioner
+            ilu = scipy.sparse.linalg.spilu(dPhi)
             # Define the preconditioner M as a LinearOperator
-            # Have a look at the web for hints on defining a preconditioner for an iterative solver in scipy
-            # TODO ILU Preconditioner
-            raise NotImplementedError("ILU Preconditioner not implemented")
-
+            M = scipy.sparse.linalg.LinearOperator(shape=dPhi.shape, matvec=ilu.solve)
             return M
         else:
             raise UnknownOption(f"preconditioner={self.solver_opts['preconditioner']} is not implemented.")
@@ -483,7 +499,7 @@ class ImplicitRK:
             fz (np.array): Array of shape (s*n_vars) containing F(z)=(f(t0+c_1*dt,y0+z1),...,f(t0+c_s*dt,y0+zs))
         """
         n_vars = len(y0)
-        s = int(z.shape[0] / n_vars)
+        s = self.s
         c = self.c
         fz = np.zeros_like(z)
         for i in range(0, s):
