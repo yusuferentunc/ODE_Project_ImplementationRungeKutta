@@ -435,9 +435,8 @@ class ImplicitRK:
         # - method=2: exploit the special structure of Phi(z)=I-dt*kron(A,I)@(f(y0+z0),...,f(y0+zs)), hence compute the Jacobians of f at y0+z1,...,y0+zs
         #             and then evaluate the jacobian of Phi
         # Choose what you prefer, but one of the two is more efficient than the other. Which one?
-
-        # TODO ImplicitRK.dPhi
-        raise NotImplementedError("ImplicitRK.dPhi not implemented")
+        dPhi = scipy.optimize.approx_fprime(z, self.Phi,self.FD_eps, t0, y0, f, dt)
+        return dPhi
 
     def dPhi_FD(self, dz, z, t0, y0, f, dt, Phiz=None):
         """
