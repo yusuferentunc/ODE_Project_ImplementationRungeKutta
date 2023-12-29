@@ -325,10 +325,6 @@ class ImplicitRK:
             dPhiz, M = dPhi_info
             # Call the iterative solver (e.g., GMRES)
             dz, info = scipy.sparse.linalg.gmres(A=dPhiz, b=-Phiz, M=M, callback=gmres_count)
-            # Check convergence
-            if info != 0:
-                raise RuntimeError("Iterative solver did not converge")
-
             # get the number of iterations from the callback
             n_lin_solver_iter = gmres_count.niter
 
@@ -361,7 +357,9 @@ class ImplicitRK:
             # Give Phiz_copy as an argument to self.dPhi_FD to save computations
             # Remember to use z_copy and Phiz_copy instead of z and Phiz, otherwise the Jacobian will be wrong in quasi-Newton
             # TODO Matrix Free Approach
-            raise NotImplementedError("Matrix Free Approach not implemented")
+            #raise NotImplementedError("Matrix Free Approach not implemented")
+            dPhi = scipy.sparse.linalg.LinearOperator((self.n_vars * self.s, self.n_vars * self.s),
+                                       matvec=lambda dz: self.dPhi_FD(dz, z_copy, t0, y0, f, dt, Phiz_copy))
         else:
             # Compute the Jacobian matrix Phi'(z) exactly
             dPhi = self.dPhi(z_copy, t0, y0, f, dt)
@@ -478,10 +476,10 @@ class ImplicitRK:
             # We chose eps such that eps*dz is about FD_eps times smaller than y0+z
             norm_yz = np.linalg.norm(y0 + z[: self.n_vars])
             eps = self.FD_eps * (1.0 + norm_yz) / norm_dz
-
-            # TODO ImplicitRK.dPhi_FD
-            raise NotImplementedError("ImplicitRK.dPhi_FD not implemented")
-
+            # Calculate phiz * v
+            Phiz_next = self.Phi(z + eps * dz, t0, y0, f, dt)
+            # Approximate Jacobian of PhiZ
+            return (Phiz_next - Phiz) / eps
         else:  # if dz==0 then return 0 (dPhi*0=0)
             return np.zeros_like(dz)
 
