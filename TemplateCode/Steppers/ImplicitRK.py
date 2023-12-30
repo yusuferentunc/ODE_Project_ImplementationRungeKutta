@@ -720,12 +720,16 @@ class Radau(Collocation):
             # This is particularly important when solving PDEs, where n_vars is large
             # and can change if we change the mesh size.
             # Compute diff = ^y_n+1 - y_n+1
+            n_vars = self.n_vars
             b_hat_0 = 0.274888829595677
             e = np.zeros(3)
             e[0] = -b_hat_0 * (13 + 7 * np.sqrt(6)) / 3
             e[1] = -b_hat_0 * (13 - 7 * np.sqrt(6)) / 3
             e[2] = -b_hat_0 / 3
-            diff = np.abs(b_hat_0 * dt * f(t0, y0) + sum((e[i] * z[i] for i in range(self.s))))
+            temp = np.zeros(self.n_vars)
+            for i in range(self.s):
+                temp += e[i] * z[i*n_vars:(i+1)*n_vars]
+            diff = np.abs(b_hat_0 * dt * f(t0, y0) + temp)
             # Estimate the error. Divide by sqrt(diff.size) to make it independent of the number of variables
             err = np.linalg.norm(diff) / np.sqrt(diff.size)
             return err
