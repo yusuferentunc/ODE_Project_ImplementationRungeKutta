@@ -642,8 +642,6 @@ class Gauss(Collocation):
         # Hint: use np.polynomial.polynomial.Polynomial to define the polynomial x.
         # Then use the power **, mult *, etc to define the polynomial x**s*(1-x)**s.
         # Then use the np.polynomial.polynomial.Polynomial class methods to differentiate it and compute the roots.
-
-        # Use np.polynomial.polynomial.Polynomial to define the polynomial x
         x = np.polynomial.polynomial.Polynomial([0, 1])
         p_s = x ** s * (1 - x) ** s
         p_s_diff = p_s.deriv(m=s)
