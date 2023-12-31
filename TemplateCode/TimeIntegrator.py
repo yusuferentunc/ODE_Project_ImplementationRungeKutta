@@ -164,9 +164,9 @@ class TimeIntegrator:
             dt_new = self.dt_safe_fac * dt_list[n_it] * ((self.err_tol / err_list[n_it]) ** power_temp)
         else:
             dt_new = ((err_list[n_it - 1] / err_list[n_it]) ** power_temp) * \
-                     (dt_list[n_it - 1] / dt_list[n_it - 2]) * \
+                     (dt_list[n_it] / dt_list[n_it - 1]) * \
                      ((self.err_tol / err_list[n_it]) ** power_temp) * \
-                     dt_list[n_it - 1]
+                     dt_list[n_it]
         dt_new = min(max(dt_new, self.dt_facmin * dt_list[n_it]), self.dt_facmax * dt_list[n_it])
 
         return dt_new
